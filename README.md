@@ -20,12 +20,6 @@ WorkManager, Ktor, and DataStore.
 2. Sync Gradle and build.
 3. Run on device/emulator (Android 8.0+).
 
-**API Config**
-
-- Set your **Base URL** (and optional auth keys) in the remote/data layer (e.g.,
-  `core/data/remote/`).
-- Typical flow: **Sign Up → Log In → Register Patient → Add Vitals → Assessment → Listing**.
-
 ---
 
 ## What’s Implemented
