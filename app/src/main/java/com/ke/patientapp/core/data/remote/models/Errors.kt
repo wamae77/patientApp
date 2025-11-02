@@ -3,7 +3,6 @@ package com.ke.patientapp.core.data.remote.models
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class DataXXXXXX(
-    val message: String,
-    val slug: Int
+data class Errors(
+    val password: List<String>
 )

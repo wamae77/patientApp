@@ -7,6 +7,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.ke.patientapp.core.data.local.entities.AssessmentType
 import com.ke.patientapp.feature.assessment.AssessmentScreen
+import com.ke.patientapp.feature.auth.LoginScreen
+import com.ke.patientapp.feature.auth.SignupScreen
 import com.ke.patientapp.feature.listing.ListingScreen
 import com.ke.patientapp.feature.registration.RegistrationScreen
 import com.ke.patientapp.feature.vitals.VitalsScreen
@@ -16,12 +18,26 @@ import kotlinx.serialization.Serializable
 @Composable
 fun PatientAppNavHost(
     modifier: Modifier = Modifier,
-    navController: NavHostController, startDestination: Any = RegistrationRoute
+    navController: NavHostController, startDestination: Any = LoginRoute
 ) {
     NavHost(
         modifier = modifier,
         navController = navController, startDestination = startDestination
     ) {
+        composable<LoginRoute> {
+            LoginScreen(onSignupClick = {
+                navController.navigate(SignUpRoute)
+            }, onLoggedIn = {
+                navController.navigate(RegistrationRoute)
+            })
+        }
+
+        composable<SignUpRoute> {
+            SignupScreen(onLoginClick = {
+                navController.navigate(LoginRoute)
+            })
+        }
+
         composable<RegistrationRoute> {
             RegistrationScreen(onSaved = {
                 navController.navigate(VitalsRoute(it))
@@ -46,6 +62,12 @@ fun PatientAppNavHost(
     }
 }
 
+
+@Serializable
+object LoginRoute
+
+@Serializable
+object SignUpRoute
 
 @Serializable
 object ListingRoute

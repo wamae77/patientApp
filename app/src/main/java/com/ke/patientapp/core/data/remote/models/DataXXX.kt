@@ -1,5 +1,8 @@
 package com.ke.patientapp.core.data.remote.models
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class DataXXX(
     val created_at: String,
     val dob: String,

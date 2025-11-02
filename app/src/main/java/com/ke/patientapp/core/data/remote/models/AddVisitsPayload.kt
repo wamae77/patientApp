@@ -1,5 +1,8 @@
 package com.ke.patientapp.core.data.remote.models
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class AddVisitsPayload(
     val comments: String,
     val general_health: String,

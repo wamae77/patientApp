@@ -2,6 +2,8 @@ package com.ke.patientapp.di
 
 import com.ke.patientapp.feature.assessment.repository.AssessmentRepository
 import com.ke.patientapp.feature.assessment.repository.AssessmentRepositoryImpl
+import com.ke.patientapp.feature.auth.repository.AuthRepository
+import com.ke.patientapp.feature.auth.repository.AuthRepositoryImpl
 import com.ke.patientapp.feature.listing.repository.ListingRepository
 import com.ke.patientapp.feature.listing.repository.ListingRepositoryImpl
 import com.ke.patientapp.feature.registration.repository.RegistrationRepository
@@ -37,4 +39,8 @@ abstract class DataModule {
         listingRepository: ListingRepositoryImpl
     ): ListingRepository
 
+    @Binds
+    internal abstract fun bindsAuthRepository(
+        authRepositoryImpl: AuthRepositoryImpl
+    ): AuthRepository
 }
