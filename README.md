@@ -51,13 +51,13 @@ WorkManager, Ktor, and DataStore.
   -data
     -local        # Room (entities, DAOs), Paging
     -models       # DTOs / domain models
-    -preference   # DataStore (tokens, settings)
+    -preference   # DataStore (settings)
     -remote       # Ktor client, API services
   -sync           # WorkManager jobs
   -utils          # Common helpers
 -di               # Hilt modules
 -feature
-  -assessment     # General + Overweight UIs/logic
+  -assessment     # Patient Assessment
   -auth           # Signup/Login
   -common         # Shared UI/components
   -listing        # Patient list + filters
@@ -86,13 +86,12 @@ WorkManager, Ktor, and DataStore.
 
 ## Screenshots
 
-<img alt="Login Screen" height="280" src="docs/Screenshot_20251102_210828.png" width="280"/>
-<img alt="Home Screen" height="280" src="docs/Screenshot_20251102_210905.png" width="280"/>
-<img alt="Patient Reg" height="280" src="docs/Screenshot_20251102_211004.png" width="280"/>
-<img alt="Vitals Screen" height="280" src="docs/Screenshot_20251102_211036.png" width="280"/>
-<img alt="Assessment Screen" height="280" src="docs/Screenshot_20251102_211051.png" width="280"/>
-<img alt="Patient List" height="280" src="docs/Screenshot_20251102_211109.png" width="280"/>
-<img alt="Patient Preview" height="280" src="docs/Screenshot_20251102_211126.png" width="280"/>
+<img alt="Login Screen" height="280" src="docs/Screenshot_20251102_213018.png" width="280"/>
+<img alt="Home Screen" height="280" src="docs/Screenshot_20251102_213403.png" width="280"/>
+<img alt="Patient Reg" height="280" src="docs/Screenshot_20251102_213244.png" width="280"/>
+<img alt="Vitals Screen" height="280" src="docs/Screenshot_20251102_213320.png" width="280"/>
+<img alt="Assessment Screen" height="280" src="docs/Screenshot_20251102_213328.png" width="280"/>
+<img alt="Patient Preview" height="280" src="docs/Screenshot_20251102_213449.png" width="280"/>
 
 
 
