@@ -5,9 +5,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
 @Composable
-fun LoginScreen(onSignupClick: () -> Unit) {
+fun LoginScreen(onSignupClick: () -> Unit,viewModel: AuthViewModel= hiltViewModel()) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
