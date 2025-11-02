@@ -104,20 +104,22 @@ class VitalsViewModel @Inject constructor(
                 bmi = s.bmi.toFloat(),
                 syncState = SyncState.PENDING
             )
-            vitalsRepository.save(entity)
-            _uiState.update { it.copy(loading = false) }
+            vitalsRepository.save(v=entity, onDuplicate = {
+                _uiState.update { it.copy(loading = false, invalidVisitDateError = "Visit date already exists") }
+            }, onSuccess = {
+                _uiState.update { it.copy(loading = false) }
 
-            val next = if (s.bmi.toFloat() <= 25f) AssessmentRoute(
-                s.patientId, s.patientName,s.visitDate,
-                AssessmentType.GENERAL
-            )
-            else AssessmentRoute(
-                s.patientId, s.patientName,s.visitDate,
-                AssessmentType.OVERWEIGHT
-            )
+                val next = if (s.bmi.toFloat() <= 25f) AssessmentRoute(
+                    s.patientId, s.patientName,s.visitDate,
+                    AssessmentType.GENERAL
+                )
+                else AssessmentRoute(
+                    s.patientId, s.patientName,s.visitDate,
+                    AssessmentType.OVERWEIGHT
+                )
 
-            _next.send(next)
-
+                _next.send(next)
+            })
         }
     }
 

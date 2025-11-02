@@ -3,6 +3,7 @@ package com.ke.patientapp.core.data.local.dao
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import androidx.room.Upsert
@@ -13,7 +14,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface VitalsDao {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(v: VitalsEntity): Long
 
     @Upsert
@@ -24,6 +25,9 @@ interface VitalsDao {
 
     @Delete
     suspend fun delete(v: VitalsEntity)
+
+    @Query("SELECT EXISTS(SELECT 1 FROM vitals WHERE patientDbId = :pid AND visitDate = :date)")
+    suspend fun exists(pid: Long, date: String): Boolean
 
     @Query(
         """

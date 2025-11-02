@@ -73,7 +73,7 @@ fun VitalsScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        DateField(value = ui.visitDate, label = "Visit date", onPick = viewModel::onVisitDateChange)
+        DateField(value = ui.visitDate, label = "Visit date", onPick = viewModel::onVisitDateChange, error = ui.invalidVisitDateError,enabled = true)
 
 
         OutlinedTextField(

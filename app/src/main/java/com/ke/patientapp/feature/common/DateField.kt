@@ -19,13 +19,15 @@ import androidx.compose.ui.Modifier
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DateField(value: String, label: String, onPick: (String) -> Unit) {
+fun DateField(value: String, label: String, onPick: (String) -> Unit, error: String? = null,enabled:Boolean=false) {
     var open by remember { mutableStateOf(false) }
     Column {
         OutlinedTextField(
             value = value,
             onValueChange = {},
-            enabled = false,
+            enabled = enabled,
+            isError = error != null,
+            supportingText = { error?.let { Text(it) } },
             label = { Text(label) },
             modifier = Modifier.fillMaxWidth(),
             trailingIcon = {

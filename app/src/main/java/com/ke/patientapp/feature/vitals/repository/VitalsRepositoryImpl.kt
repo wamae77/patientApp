@@ -10,7 +10,16 @@ class VitalsRepositoryImpl @Inject constructor(
     private val vitalsDao: VitalsDao
 ) : VitalsRepository {
 
-    override suspend fun save(v: VitalsEntity) {
-       vitalsDao.upsert(v)
+    override suspend fun save(
+        v: VitalsEntity,
+        onDuplicate: suspend () -> Unit,
+        onSuccess: suspend () -> Unit
+    ) {
+        if (vitalsDao.exists(v.patientDbId, v.visitDate)) {
+            onDuplicate()
+            return
+        }
+        vitalsDao.insert(v)
+        onSuccess()
     }
 }
