@@ -28,7 +28,7 @@ fun PatientAppNavHost(
             LoginScreen(onSignupClick = {
                 navController.navigate(SignUpRoute)
             }, onLoggedIn = {
-                navController.navigate(RegistrationRoute)
+                navController.navigate(ListingRoute)
             })
         }
 

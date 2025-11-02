@@ -16,12 +16,17 @@ import com.ke.patientapp.core.data.local.dao.AssessmentDao
 import com.ke.patientapp.core.data.local.dao.PatientDao
 import com.ke.patientapp.core.data.local.dao.VitalsDao
 import com.ke.patientapp.core.data.local.entities.SyncState
+import com.ke.patientapp.core.data.remote.addVisits
+import com.ke.patientapp.core.data.remote.addVital
+import com.ke.patientapp.core.data.remote.models.AddVisitsPayload
+import com.ke.patientapp.core.data.remote.models.AddVisitsResponse
+import com.ke.patientapp.core.data.remote.models.AddVitalPayload
+import com.ke.patientapp.core.data.remote.models.AddVitalsResponse
 import com.ke.patientapp.core.data.remote.models.RegisterPatientPayload
 import com.ke.patientapp.core.data.remote.models.RegisterPatientResponse
 import com.ke.patientapp.core.data.remote.registerPatient
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import dagger.hilt.android.qualifiers.ApplicationContext
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import java.util.concurrent.TimeUnit
@@ -51,72 +56,167 @@ class SyncWorker @AssistedInject constructor(
                 .setContentText("Your data is being synchronized")
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .build()
-
             ForegroundInfo(1, notification)
         }
     }
 
+    override suspend fun doWork(): Result = try {
+        val patientFailures = syncPatients()
 
-    override suspend fun doWork(): Result {
+        val vitalsFailures = syncVitalsForSyncedPatients()
+
+        val assessmentFailures = syncAssessmentsForSyncedPatients()
 
 
-        return try {
-            val existing = patientDao.findForSync()
+        if (patientFailures || vitalsFailures || assessmentFailures) {
+            Result.success()
+        } else {
+            Result.success()
+        }
+    } catch (e: Exception) {
+        Log.e(TAG, "doWork: hard failure", e)
+        Result.retry()
+    }
 
+    private suspend fun syncPatients(): Boolean {
+        val toSync = patientDao.findForSync(limit = 50)
+        if (toSync.isEmpty()) return false
 
-            Log.d("SyncWorker", "doWork: $existing")
-
-            if (existing.isEmpty()) return Result.success()
-
-            existing.map {
-                val patientDbId = it.id
-
-                Log.d("SyncWorker", "record: $patientDbId")
-
-                val patient = patientDao.getById(patientDbId) ?: return Result.failure()
+        var anyFailed = false
+        for (p in toSync) {
+            runCatching {
+                patientDao.updateSyncState(p.id, SyncState.SYNCING)
 
                 val res = httpClient.registerPatient(
-                    token = "44|aYQU93Fc4iV9fZlYG1d1gSaEgUQg7gid1yr3I7Ru",
+                    token = hardcodedToken(),
                     registerPatientPayload = RegisterPatientPayload(
-                        unique = patient.patientId,
-                        reg_date = patient.registrationDate,
-                        firstname = patient.firstName,
-                        lastname = patient.lastName,
-                        dob = patient.dateOfBirth,
-                        gender = patient.gender
+                        unique = p.patientId,
+                        reg_date = p.registrationDate,
+                        firstname = p.firstName,
+                        lastname = p.lastName,
+                        dob = p.dateOfBirth,
+                        gender = p.gender
                     )
                 )
-                if (res.status.value == 200) {
-                    val registerPatientResponse = res.body<RegisterPatientResponse>()
-                    Log.d("SyncWorker", "doWork: $registerPatientResponse")
-                    if (registerPatientResponse.data.proceed == 0) {
-                        patientDao.updateSyncState(
-                            id = patientDbId, state = SyncState.SYNCED
-                        )
-                    }
 
+                if (res.status.value != 200) error("registerPatient failed: ${res.status}")
+
+                val body = res.body<RegisterPatientResponse>()
+                // Your API: proceed == 0 means OK
+                if (body.data.proceed == 0) {
+                    patientDao.updateSyncState(p.id, SyncState.SYNCED)
                 } else {
-                    throw Exception("Sync failed")
+                    patientDao.updateSyncState(p.id, SyncState.FAILED)
+                    anyFailed = true
                 }
-
+            }.onFailure { ex ->
+                Log.e(TAG, "Patient sync failed id=${p.id}", ex)
+                patientDao.updateSyncState(p.id, SyncState.FAILED)
+                anyFailed = true
             }
-            return Result.success()
-        } catch (e: Exception) {
-            Log.e("PatientSyncWorker", "doWork: ", e)
-            Result.retry()
-        } catch (t: Throwable) {
-            Result.retry()
         }
+        return anyFailed
     }
+
+    private suspend fun syncVitalsForSyncedPatients(): Boolean {
+        val vitalsBatch = vitalsDao.findForSync(limit = 50)
+        if (vitalsBatch.isEmpty()) return false
+
+        var anyFailed = false
+        for (v in vitalsBatch) {
+            val parent = patientDao.getById(v.patientDbId)
+            if (parent?.syncState != SyncState.SYNCED) continue
+
+            runCatching {
+                vitalsDao.updateSyncState(v.id, SyncState.SYNCING)
+
+                val res = httpClient.addVital(
+                    addVitalPayload = AddVitalPayload(
+                        bmi = v.bmi.toString(),
+                        visit_date = v.visitDate,
+                        patient_id = parent.patientId,
+                        height = v.heightCm.toString(),
+                        weight = v.weightKg.toString(),
+
+                        ),
+                    token = hardcodedToken()
+                )
+
+                if (res.status.value != 200) error("submitVitals failed: ${res.status}")
+
+                val ok = res.body<AddVitalsResponse>().success
+                if (ok) {
+                    vitalsDao.updateSyncState(v.id, SyncState.SYNCED)
+                } else {
+                    vitalsDao.updateSyncState(v.id, SyncState.FAILED)
+                    anyFailed = true
+                }
+            }.onFailure { ex ->
+                Log.e(TAG, "Vitals sync failed id=${v.id}", ex)
+                vitalsDao.updateSyncState(v.id, SyncState.FAILED)
+                anyFailed = true
+            }
+        }
+        return anyFailed
+    }
+
+
+    private suspend fun syncAssessmentsForSyncedPatients(): Boolean {
+        val assessmentsBatch = assessmentDao.findForSync(limit = 50)
+        if (assessmentsBatch.isEmpty()) return false
+
+        var anyFailed = false
+        for (a in assessmentsBatch) {
+            val parent = patientDao.getById(a.patientDbId)
+            if (parent?.syncState != SyncState.SYNCED) continue
+
+            runCatching {
+                assessmentDao.updateSyncState(a.id, SyncState.SYNCING)
+
+                val onDiet = if (a.everBeenOnADietToLooseWeight) "Yes" else "No"
+                val onDrugs = if (a.areYouCurrentlyTakingDrugs) "Yes" else "No"
+                val res = httpClient.addVisits(
+                    token = hardcodedToken(),
+                    addVisitsPayload = AddVisitsPayload(
+                        patient_id = parent.patientId,
+                        visit_date = a.visitDate,
+                        general_health = a.generalHealth,
+                        on_diet = onDiet,
+                        on_drugs = onDrugs,
+                        comments = a.comments,
+                        vital_id = a.id.toString()
+                    )
+                )
+
+                if (res.status.value != 200) error("submitAssessment failed: ${res.status}")
+
+                val ok = res.body<AddVisitsResponse>().success
+                if (ok) {
+                    assessmentDao.updateSyncState(a.id, SyncState.SYNCED)
+                } else {
+                    assessmentDao.updateSyncState(a.id, SyncState.FAILED)
+                    anyFailed = true
+                }
+            }.onFailure { ex ->
+                Log.e(TAG, "Assessment sync failed id=${a.id}", ex)
+                assessmentDao.updateSyncState(a.id, SyncState.FAILED)
+                anyFailed = true
+            }
+        }
+        return anyFailed
+    }
+
+    private fun hardcodedToken(): String =
+        "44|aYQU93Fc4iV9fZlYG1d1gSaEgUQg7gid1yr3I7Ru"
 
     companion object {
         const val TAG = "SyncWorker"
 
-
         fun startPeriodicSyncWork(): PeriodicWorkRequest =
-            PeriodicWorkRequestBuilder<SyncWorker>(
-                15, TimeUnit.MINUTES
-            ).setConstraints(netConstraints)
-                .setBackoffCriteria(BackoffPolicy.LINEAR, 10, TimeUnit.SECONDS).build()
+            PeriodicWorkRequestBuilder<SyncWorker>(15, TimeUnit.MINUTES)
+                .setConstraints(netConstraints)
+                .setBackoffCriteria(BackoffPolicy.LINEAR, 10, TimeUnit.SECONDS)
+                .addTag(TAG)
+                .build()
     }
 }

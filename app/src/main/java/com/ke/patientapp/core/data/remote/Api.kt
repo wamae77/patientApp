@@ -68,22 +68,26 @@ suspend fun HttpClient.fetchById(
 }
 
 suspend fun HttpClient.addVital(
+    token: String,
     addVitalPayload: AddVitalPayload
 ): HttpResponse = this.post {
     url(ApiConfig.baseUrl + "vital/add")
     headers {
         append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+        append(HttpHeaders.Authorization, "Bearer $token")
     }
     setBody(addVitalPayload)
 }
 
 
 suspend fun HttpClient.addVisits(
+    token: String,
     addVisitsPayload: AddVisitsPayload
 ): HttpResponse = this.post {
     url(ApiConfig.baseUrl + "visits/add")
     headers {
         append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+        append(HttpHeaders.Authorization, "Bearer $token")
     }
     setBody(addVisitsPayload)
 }
