@@ -86,7 +86,9 @@ WorkManager, Ktor, and DataStore.
 
 ## Screenshots
 
-<img alt="Login Screen" height="280" src="docs/Screenshot_20251102_213018.png" width="280"/>
+<img alt="Login Screen"
+src="docs/Screenshot_20251102_213018.png"
+style="width:280px; height:auto;">
 <img alt="Home Screen" height="280" src="docs/Screenshot_20251102_213403.png" width="280"/>
 <img alt="Patient Reg" height="280" src="docs/Screenshot_20251102_213244.png" width="280"/>
 <img alt="Vitals Screen" height="280" src="docs/Screenshot_20251102_213320.png" width="280"/>
