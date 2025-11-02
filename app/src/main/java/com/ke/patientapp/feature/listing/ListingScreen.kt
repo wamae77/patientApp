@@ -54,11 +54,9 @@ fun ListingScreen(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
-        //     verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         LazyColumn(
             modifier = Modifier
-                //.weight(1f)
                 .fillMaxWidth(),
             contentPadding = PaddingValues(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
