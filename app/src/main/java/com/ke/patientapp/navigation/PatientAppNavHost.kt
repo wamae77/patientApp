@@ -66,7 +66,9 @@ fun PatientAppNavHost(
         }
 
         composable<PatientViewRoute> {
-            PatientViewScreen()
+            PatientViewScreen(onVitalsSelected = {
+                navController.navigate(VitalsRoute(it))
+            })
         }
     }
 }

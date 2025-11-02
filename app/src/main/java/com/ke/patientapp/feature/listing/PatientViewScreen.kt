@@ -3,28 +3,21 @@ package com.ke.patientapp.feature.listing
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.OpenInNew
-import androidx.compose.material.icons.outlined.OpenInNew
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,8 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -43,11 +34,11 @@ import com.ke.patientapp.core.data.local.entities.AssessmentEntity
 import com.ke.patientapp.core.data.local.entities.PatientFullRecord
 import com.ke.patientapp.core.data.local.entities.SyncState
 import com.ke.patientapp.core.data.local.entities.VitalsEntity
-import com.ke.patientapp.ui.theme.PatientappTheme
 
 @Composable
 fun PatientViewScreen(
-    viewModel: PatientPreview = hiltViewModel()
+    viewModel: PatientPreview = hiltViewModel(),
+    onVitalsSelected: (Long) -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -73,14 +64,20 @@ fun PatientViewScreen(
             ) { Text("Error: ${s.message}") }
         }
 
-        is UiState.Success -> PatientContent(s.record)
+        is UiState.Success -> PatientContent(
+            s.record,
+            onAddVitals = onVitalsSelected,
+        )
     }
 }
 
 @Composable
-private fun PatientContent(record: PatientFullRecord) {
+private fun PatientContent(
+    record: PatientFullRecord,
+    onAddVitals: (Long) -> Unit = {},
+) {
     val patient = record.patient
-    val latestVitals = record.vitals.maxByOrNull { it.visitDate }
+    val latestVitals = record.vitals.sortedByDescending { it.visitDate }
     val assessments = record.assessments.sortedByDescending { it.visitDate }
 
     LazyColumn(
@@ -99,7 +96,25 @@ private fun PatientContent(record: PatientFullRecord) {
         }
 
         item {
-            VitalsCard(latestVitals)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Vitals",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                OutlinedButton(onClick = { onAddVitals(patient.id) }) {
+                    Text("Add Vitals")
+                }
+            }
+        }
+        if (latestVitals.isEmpty()) {
+            item { Text("No Vitals yet.", color = MaterialTheme.colorScheme.outline) }
+        } else {
+            items(latestVitals) { a ->
+                VitalsCard(a)
+            }
         }
 
         item {
@@ -190,16 +205,16 @@ fun SyncStatusLabel(
     state: SyncState,
     modifier: Modifier = Modifier
 ) {
-    val amber = Color(0xFFF59E0B) 
-    val cyan  = Color(0xFF22D3EE)
+    val amber = Color(0xFFF59E0B)
+    val cyan = Color(0xFF22D3EE)
     val green = Color(0xFF34D399)
-    val rose  = Color(0xFFF43F5E)
+    val rose = Color(0xFFF43F5E)
 
     val (label, tint) = when (state) {
         SyncState.PENDING -> "Sync pending" to amber
-        SyncState.SYNCING -> "Syncing…"     to cyan
-        SyncState.SYNCED  -> "Synced"       to green
-        SyncState.FAILED  -> "Sync failed"  to rose
+        SyncState.SYNCING -> "Syncing…" to cyan
+        SyncState.SYNCED -> "Synced" to green
+        SyncState.FAILED -> "Sync failed" to rose
     }
 
     val shape = RoundedCornerShape(16.dp)
