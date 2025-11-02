@@ -16,10 +16,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.AssistChip
@@ -77,7 +80,9 @@ fun ListingScreen(
                 .toInstant()
                 .toEpochMilli()
         }
-    } catch (_: Exception) { null }
+    } catch (_: Exception) {
+        null
+    }
 
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = stringToMillis(filterDateStr)
@@ -85,67 +90,87 @@ fun ListingScreen(
     )
 
     Box(
-        modifier = modifier.fillMaxSize().padding(16.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text("Patients", style = MaterialTheme.typography.titleLarge)
-                        filterDateStr?.let {
-                            Spacer(Modifier.height(4.dp))
-                            AssistChip(
-                                onClick = { showDateDialog = true },
-                                label = { Text("Date: $it") },
-                                trailingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Clear"
-                                    )
+
+        if (lazyItems.itemCount == 0) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    modifier = Modifier.size(128.dp).align(Alignment.CenterHorizontally),
+                    imageVector = Icons.AutoMirrored.Default.List,
+                    contentDescription = "Clear",
+                )
+            }
+
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Patients", style = MaterialTheme.typography.titleLarge)
+                            filterDateStr?.let {
+                                Spacer(Modifier.height(4.dp))
+                                AssistChip(
+                                    onClick = { showDateDialog = true },
+                                    label = { Text("Date: $it") },
+                                    trailingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Clear"
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(onClick = { showDateDialog = true }) {
+                                Icon(
+                                    Icons.Outlined.DateRange,
+                                    contentDescription = "Filter by date"
+                                )
+                            }
+                            if (filterDateStr != null) {
+                                IconButton(onClick = { viewModel.setFilterDate(null) }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Clear date")
                                 }
-                            )
-                        }
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconButton(onClick = { showDateDialog = true }) {
-                            Icon(Icons.Outlined.DateRange, contentDescription = "Filter by date")
-                        }
-                        if (filterDateStr != null) {
-                            IconButton(onClick = { viewModel.setFilterDate(null) }) {
-                                Icon(Icons.Default.Close, contentDescription = "Clear date")
                             }
                         }
                     }
                 }
-            }
 
-            items(
-                count = lazyItems.itemCount,
-                key = lazyItems.itemKey { it.patientDbId },
-                contentType = lazyItems.itemContentType()
-            ) { index ->
-                lazyItems[index]?.let { row ->
-                    PatientRow(row = row, onClick ={onItemClick(row.patientDbId) })
+                items(
+                    count = lazyItems.itemCount,
+                    key = lazyItems.itemKey { it.patientDbId },
+                    contentType = lazyItems.itemContentType()
+                ) { index ->
+                    lazyItems[index]?.let { row ->
+                        PatientRow(row = row, onClick = { onItemClick(row.patientDbId) })
+                    }
                 }
-            }
 
-            item {
-                when (val s = lazyItems.loadState.append) {
-                    is LoadState.Loading -> LinearProgressIndicator(Modifier.fillMaxWidth())
-                    is LoadState.Error -> Text("Error loading more: ${s.error.message}")
-                    else -> {}
+                item {
+                    when (val s = lazyItems.loadState.append) {
+                        is LoadState.Loading -> LinearProgressIndicator(Modifier.fillMaxWidth())
+                        is LoadState.Error -> Text("Error loading more: ${s.error.message}")
+                        else -> {}
+                    }
                 }
             }
         }
-
         when (val s = lazyItems.loadState.refresh) {
             is LoadState.Loading -> LinearProgressIndicator(Modifier.fillMaxWidth())
             is LoadState.Error -> Text("Error: ${s.error.message}")
@@ -186,10 +211,6 @@ fun ListingScreen(
         }
     }
 }
-
-
-
-
 
 
 @Composable
@@ -246,10 +267,10 @@ fun PatientRow(
 private fun StatusChip(label: String, modifier: Modifier = Modifier) {
     val tint = when (label.lowercase()) {
         "underweight" -> Color(0xFF22D3EE)
-        "normal"      -> Color(0xFF34D399)
-        "overweight"  -> Color(0xFFF59E0B)
-        "obese"       -> Color(0xFFF43F5E)
-        else          -> MaterialTheme.colorScheme.outline
+        "normal" -> Color(0xFF34D399)
+        "overweight" -> Color(0xFFF59E0B)
+        "obese" -> Color(0xFFF43F5E)
+        else -> MaterialTheme.colorScheme.outline
     }
 
     Row(

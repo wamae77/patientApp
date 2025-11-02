@@ -46,7 +46,9 @@ fun LoginScreen(
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = state.email,
-            onValueChange = viewModel::onEmailChange,
+            onValueChange = {
+                viewModel.onEmailChange(it.trim())
+            },
             label = { Text("Email") },
             isError = state.emailError != null,
             supportingText = {
