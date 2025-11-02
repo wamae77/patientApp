@@ -29,6 +29,7 @@ fun LoginScreen(
                 }
 
                 LoginEffect.NavigateHome -> onLoggedIn()
+                LoginEffect.NavigateLogin -> {}
             }
         }
     }

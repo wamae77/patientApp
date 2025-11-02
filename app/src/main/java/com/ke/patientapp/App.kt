@@ -13,6 +13,14 @@ import javax.inject.Inject
 @HiltAndroidApp
 class App : Application(), Configuration.Provider {
 
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder().setWorkerFactory(workerFactory)
+            .setMinimumLoggingLevel(Log.INFO).build()
+
+    
     override fun onCreate() {
         super.onCreate()
 
@@ -24,13 +32,6 @@ class App : Application(), Configuration.Provider {
             SyncWorker.startPeriodicSyncWork()
         )
     }
-
-    @Inject
-    lateinit var workerFactory: HiltWorkerFactory
-
-    override val workManagerConfiguration: Configuration
-        get() = Configuration.Builder().setWorkerFactory(workerFactory)
-            .setMinimumLoggingLevel(Log.INFO).build()
 
 
 }

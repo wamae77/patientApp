@@ -15,7 +15,6 @@ import com.ke.patientapp.feature.auth.state.LoginEffect
 
 @Composable
 fun SignupScreen(
-    onLoginClick: () -> Unit,
     onSignupSuccess: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
@@ -30,7 +29,7 @@ fun SignupScreen(
                 }
 
                 LoginEffect.NavigateHome -> onSignupSuccess()
-                LoginEffect.NavigateLogin -> onLoginClick()
+                LoginEffect.NavigateLogin -> onSignupSuccess()
             }
         }
     }
@@ -96,7 +95,7 @@ fun SignupScreen(
             }
         }
 
-        TextButton(onClick = onLoginClick, modifier = Modifier.fillMaxWidth()) {
+        TextButton(onClick = onSignupSuccess, modifier = Modifier.fillMaxWidth()) {
             Text("Already have an account? Login")
         }
     }

@@ -33,7 +33,7 @@ fun PatientAppNavHost(
         }
 
         composable<SignUpRoute> {
-            SignupScreen(onLoginClick = {
+            SignupScreen(onSignupSuccess = {
                 navController.navigate(LoginRoute)
             })
         }
