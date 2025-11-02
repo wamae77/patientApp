@@ -10,6 +10,7 @@ import com.ke.patientapp.feature.assessment.AssessmentScreen
 import com.ke.patientapp.feature.auth.LoginScreen
 import com.ke.patientapp.feature.auth.SignupScreen
 import com.ke.patientapp.feature.listing.ListingScreen
+import com.ke.patientapp.feature.listing.PatientViewScreen
 import com.ke.patientapp.feature.registration.RegistrationScreen
 import com.ke.patientapp.feature.vitals.VitalsScreen
 import kotlinx.serialization.Serializable
@@ -59,7 +60,13 @@ fun PatientAppNavHost(
         composable<ListingRoute> {
             ListingScreen(onRegistrationClick = {
                 navController.navigate(RegistrationRoute)
+            }, onItemClick = { id ->
+                navController.navigate(PatientViewRoute(id))
             })
+        }
+
+        composable<PatientViewRoute> {
+            PatientViewScreen()
         }
     }
 }
@@ -73,6 +80,9 @@ object SignUpRoute
 
 @Serializable
 object ListingRoute
+
+@Serializable
+data class PatientViewRoute(val id: Long)
 
 @Serializable
 object RegistrationRoute

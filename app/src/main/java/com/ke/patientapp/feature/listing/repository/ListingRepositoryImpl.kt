@@ -4,6 +4,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.ke.patientapp.core.data.local.dao.ListingDao
+import com.ke.patientapp.core.data.local.entities.PatientFullRecord
 import com.ke.patientapp.core.data.models.PatientListItem
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -23,4 +24,8 @@ class ListingRepositoryImpl @Inject constructor(
         Pager(PagingConfig(pageSize = pageSize, enablePlaceholders = false)) {
             listingDao.pagingByDate(visitDate)
         }.flow
+
+    override suspend fun getPatientFullRecord(patientDbId: Long): PatientFullRecord? {
+        return listingDao.getPatientFullRecord(patientDbId)
+    }
 }

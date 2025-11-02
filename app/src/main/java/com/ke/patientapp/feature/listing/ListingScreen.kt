@@ -57,6 +57,7 @@ import java.time.format.DateTimeFormatter
 fun ListingScreen(
     modifier: Modifier = Modifier,
     onRegistrationClick: () -> Unit,
+    onItemClick: (Long) -> Unit,
     viewModel: ListingViewModel = hiltViewModel(),
 ) {
     val lazyItems = viewModel.paged.collectAsLazyPagingItems()
@@ -127,7 +128,7 @@ fun ListingScreen(
                 contentType = lazyItems.itemContentType()
             ) { index ->
                 lazyItems[index]?.let { row ->
-                    PatientRow(row) { /* open patient */ }
+                    PatientRow(row) {onItemClick(row.patientDbId) }
                 }
             }
 

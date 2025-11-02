@@ -3,6 +3,8 @@ package com.ke.patientapp.core.data.local.dao
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Transaction
+import com.ke.patientapp.core.data.local.entities.PatientFullRecord
 import com.ke.patientapp.core.data.models.PatientListItem
 
 @Dao
@@ -48,6 +50,9 @@ interface ListingDao {
     )
     fun pagingLatest(): PagingSource<Int, PatientListItem>
 
+    @Transaction
+    @Query("SELECT * FROM patients WHERE id = :id LIMIT 1")
+    suspend fun getPatientFullRecord(id: Long): PatientFullRecord?
 
 
 }
