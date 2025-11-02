@@ -44,7 +44,7 @@ class ListingViewModel @Inject constructor(
         .cachedIn(viewModelScope)
 
     fun setFilterDate(date: String?) {
-        _filterDate.value = date ?: LocalDate.now().toString()
+        _filterDate.value = date
     }
 
     private fun PatientListItem.toUiRow(): UiRow {

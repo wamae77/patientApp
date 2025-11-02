@@ -1,6 +1,5 @@
 package com.ke.patientapp.feature.listing
 
-import android.R.attr.onClick
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,18 +14,27 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,30 +47,78 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.ke.patientapp.feature.listing.state.UiRow
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 
 @Composable
 fun ListingScreen(
     modifier: Modifier = Modifier,
-    onRegistrationClick:()->Unit,
+    onRegistrationClick: () -> Unit,
     viewModel: ListingViewModel = hiltViewModel(),
 ) {
     val lazyItems = viewModel.paged.collectAsLazyPagingItems()
-    val filterDate by viewModel.filterDate.collectAsState()
+    val filterDateStr by viewModel.filterDate.collectAsState()
+    val formatter = remember { DateTimeFormatter.ISO_LOCAL_DATE }
+    var showDateDialog by remember { mutableStateOf(false) }
+
+    fun stringToMillis(dateStr: String?): Long? = try {
+        dateStr?.let {
+            LocalDate.parse(it, formatter)
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli()
+        }
+    } catch (_: Exception) { null }
+
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = stringToMillis(filterDateStr)
+            ?: LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    )
 
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = modifier.fillMaxSize().padding(16.dp),
     ) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item {
-
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Patients", style = MaterialTheme.typography.titleLarge)
+                        filterDateStr?.let {
+                            Spacer(Modifier.height(4.dp))
+                            AssistChip(
+                                onClick = { showDateDialog = true },
+                                label = { Text("Date: $it") },
+                                trailingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Clear"
+                                    )
+                                }
+                            )
+                        }
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { showDateDialog = true }) {
+                            Icon(Icons.Outlined.DateRange, contentDescription = "Filter by date")
+                        }
+                        if (filterDateStr != null) {
+                            IconButton(onClick = { viewModel.setFilterDate(null) }) {
+                                Icon(Icons.Default.Close, contentDescription = "Clear date")
+                            }
+                        }
+                    }
+                }
             }
 
             items(
@@ -71,7 +127,7 @@ fun ListingScreen(
                 contentType = lazyItems.itemContentType()
             ) { index ->
                 lazyItems[index]?.let { row ->
-                    PatientRow(row) { /* onOpenPatient(row.patientDbId) */ }
+                    PatientRow(row) { /* open patient */ }
                 }
             }
 
@@ -101,7 +157,31 @@ fun ListingScreen(
                 .imePadding()
         )
     }
+
+    if (showDateDialog) {
+        DatePickerDialog(
+            onDismissRequest = { showDateDialog = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val millis = datePickerState.selectedDateMillis
+                    val pickedStr = millis?.let {
+                        Instant.ofEpochMilli(it)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+                            .format(formatter)
+                    }
+                    viewModel.setFilterDate(pickedStr)
+                    showDateDialog = false
+                }) { Text("OK") }
+            },
+            dismissButton = { TextButton(onClick = { showDateDialog = false }) { Text("Cancel") } }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 }
+
+
 
 
 @Composable
