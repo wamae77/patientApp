@@ -44,8 +44,9 @@ fun SignupScreen(
         Spacer(Modifier.height(16.dp))
 
         OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
             value = state.email,
-            onValueChange = viewModel::onSignupEmailChange,
+            onValueChange ={ viewModel.onSignupEmailChange(it.trim())},
             label = { Text("Email") },
             isError = state.emailError != null,
             supportingText = { if (state.emailError != null) Text(state.emailError!!) }
@@ -53,6 +54,7 @@ fun SignupScreen(
         Spacer(Modifier.height(8.dp))
 
         OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
             value = state.firstName,
             onValueChange = viewModel::onFirstNameChange,
             label = { Text("First Name") },
@@ -62,6 +64,7 @@ fun SignupScreen(
         Spacer(Modifier.height(8.dp))
 
         OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
             value = state.lastName,
             onValueChange = viewModel::onLastNameChange,
             label = { Text("Last Name") },
@@ -71,6 +74,7 @@ fun SignupScreen(
         Spacer(Modifier.height(8.dp))
 
         OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
             value = state.password,
             onValueChange = viewModel::onSignupPasswordChange,
             label = { Text("Password") },

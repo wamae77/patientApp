@@ -97,15 +97,58 @@ fun ListingScreen(
 
         if (lazyItems.itemCount == 0) {
             Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                modifier = Modifier.fillMaxSize()
             ) {
-                Icon(
-                    modifier = Modifier.size(128.dp).align(Alignment.CenterHorizontally),
-                    imageVector = Icons.AutoMirrored.Default.List,
-                    contentDescription = "Clear",
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Patients", style = MaterialTheme.typography.titleLarge)
+                        filterDateStr?.let {
+                            Spacer(Modifier.height(4.dp))
+                            AssistChip(
+                                onClick = { showDateDialog = true },
+                                label = { Text("Date: $it") },
+                                trailingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Clear"
+                                    )
+                                }
+                            )
+                        }
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { showDateDialog = true }) {
+                            Icon(
+                                Icons.Outlined.DateRange,
+                                contentDescription = "Filter by date"
+                            )
+                        }
+                        if (filterDateStr != null) {
+                            IconButton(onClick = { viewModel.setFilterDate(null) }) {
+                                Icon(Icons.Default.Close, contentDescription = "Clear date")
+                            }
+                        }
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Default.List,
+                        contentDescription = "Empty list",
+                        modifier = Modifier.size(128.dp)
+                    )
+                }
             }
 
         } else {
