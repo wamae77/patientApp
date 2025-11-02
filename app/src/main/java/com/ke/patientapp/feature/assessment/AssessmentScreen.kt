@@ -82,7 +82,13 @@ fun AssessmentScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        DateField(value = ui.visitDate, label = "Visit date", onPick = viewModel::onVisitDateChange)
+        DateField(
+            value = ui.visitDate,
+            label = "Visit date",
+            onPick = viewModel::onVisitDateChange,
+            enabled = true,
+            error = ui.invalidVisitDateError
+        )
 
         Text("General Health?")
         Spacer(modifier = Modifier.height(8.dp))

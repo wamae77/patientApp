@@ -4,5 +4,5 @@ import com.ke.patientapp.core.data.local.entities.AssessmentEntity
 
 interface AssessmentRepository {
 
-    suspend fun save(assessmentEntity: AssessmentEntity)
+    suspend fun save(assessmentEntity: AssessmentEntity,onSaved:suspend ()-> Unit,onDuplicate:suspend ()-> Unit)
 }

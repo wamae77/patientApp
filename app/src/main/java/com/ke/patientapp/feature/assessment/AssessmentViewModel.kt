@@ -1,6 +1,5 @@
 package com.ke.patientapp.feature.assessment
 
-import androidx.compose.ui.text.toLowerCase
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -77,8 +76,11 @@ class AssessmentViewModel @Inject constructor(
                 null -> return@launch
             }
 
-            assessmentRepository.save(assessment)
-            _navigation.send(true)
+            assessmentRepository.save(assessment, onSaved = {
+                _navigation.send(true)
+            }, onDuplicate = {
+                _uiState.update { it.copy(invalidVisitDateError = "Visit date already exists") }
+            })
         }
     }
 

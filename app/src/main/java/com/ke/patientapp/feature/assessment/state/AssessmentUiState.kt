@@ -8,5 +8,7 @@ data class AssessmentUiState(
     val visitDate: String = "",
     val assessment: AssessmentType? = null,
     val comments: String = "",
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+
+    val invalidVisitDateError: String? = null,
 )

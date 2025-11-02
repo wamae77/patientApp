@@ -26,6 +26,9 @@ interface AssessmentDao {
     @Delete
     suspend fun delete(a: AssessmentEntity)
 
+    @Query("SELECT EXISTS(SELECT 1 FROM assessments WHERE patientDbId = :pid AND visitDate = :date)")
+    suspend fun exists(pid: Long, date: String): Boolean
+
     @Query(
         """
             SELECT * FROM assessments
