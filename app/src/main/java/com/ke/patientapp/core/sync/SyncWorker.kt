@@ -41,24 +41,13 @@ class SyncWorker @AssistedInject constructor(
     private val httpClient: HttpClient,
 ) : CoroutineWorker(context, workerParams) {
 
-    override suspend fun getForegroundInfo(): ForegroundInfo {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.syncForegroundInfo(
-                channelName = "Sync Service",
-                title = "Syncing Data",
-                contentText = "Your data is being synchronized",
-                notDescription = "Background sync notification"
-            )
-        } else {
-            val notification = NotificationCompat.Builder(context, "")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle("Syncing Data")
-                .setContentText("Your data is being synchronized")
-                .setPriority(NotificationCompat.PRIORITY_LOW)
-                .build()
-            ForegroundInfo(1, notification)
-        }
-    }
+    override suspend fun getForegroundInfo(): ForegroundInfo =
+        context.syncForegroundInfo(
+            channelName = "Sync Service",
+            title = "Syncing Data",
+            contentText = "Your data is being synchronized",
+            notDescription = "Background sync notification"
+        )
 
     override suspend fun doWork(): Result = try {
         val patientFailures = syncPatients()

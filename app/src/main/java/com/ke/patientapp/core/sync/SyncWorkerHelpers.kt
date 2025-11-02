@@ -1,15 +1,12 @@
 package com.ke.patientapp.core.sync
 
-import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.ForegroundInfo
@@ -27,7 +24,6 @@ private const val SYNC_NOTIFICATION_ID = 0
 private const val SYNC_NOTIFICATION_CHANNEL_ID = "SyncNotificationChannel"
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 fun Context.syncForegroundInfo(
     channelName: String,
     title: String,
@@ -45,7 +41,6 @@ fun Context.syncForegroundInfo(
 )
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 private fun Context.syncWorkNotification(
     channelName: String,
     title: String,
