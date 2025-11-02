@@ -43,6 +43,23 @@ WorkManager, Ktor, and DataStore.
 
 ---
 
+## Screenshots
+
+<table>
+  <tr>
+    <td><img src="docs/Screenshot_20251102_213018.png" alt="Login" width="180"></td>
+    <td><img src="docs/Screenshot_20251102_213403.png" alt="Home" width="180"></td>
+    <td><img src="docs/Screenshot_20251102_213244.png" alt="Patient Reg" width="180"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/Screenshot_20251102_213320.png" alt="Vitals" width="180"></td>
+    <td><img src="docs/Screenshot_20251102_213328.png" alt="Assessment" width="180"></td>
+    <td><img src="docs/Screenshot_20251102_213449.png" alt="Patient Preview" width="180"></td>
+  </tr>
+</table>
+
+---
+
 ## Project Structure
 
 ```
@@ -84,14 +101,6 @@ WorkManager, Ktor, and DataStore.
 
 ---
 
-## Screenshots
-
-<img alt="Login Screen" src="docs/Screenshot_20251102_213018.png" style="width:100px; height:auto;">
-<img alt="Home Screen" src="docs/Screenshot_20251102_213403.png" style="width:100px; height:auto;"/>
-<img alt="Patient Reg" src="docs/Screenshot_20251102_213244.png" style="width:100px; height:auto;"/>
-<img alt="Vitals Screen" src="docs/Screenshot_20251102_213320.png" style="width:100px; height:auto;"/>
-<img alt="Assessment Screen" src="docs/Screenshot_20251102_213328.png" style="width:100px; height:auto;"/>
-<img alt="Patient Preview" src="docs/Screenshot_20251102_213449.png" style="width:100px; height:auto;"/>
 
 
 
