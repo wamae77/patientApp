@@ -86,12 +86,12 @@ WorkManager, Ktor, and DataStore.
 
 ## Screenshots
 
-<img alt="Login Screen" src="docs/Screenshot_20251102_213018.png" style="width:280px; height:auto;">
-<img alt="Home Screen" src="docs/Screenshot_20251102_213403.png" style="width:280px; height:auto;"/>
-<img alt="Patient Reg" src="docs/Screenshot_20251102_213244.png" style="width:280px; height:auto;"/>
-<img alt="Vitals Screen" src="docs/Screenshot_20251102_213320.png" style="width:280px; height:auto;"/>
-<img alt="Assessment Screen" src="docs/Screenshot_20251102_213328.png" style="width:280px; height:auto;"/>
-<img alt="Patient Preview" src="docs/Screenshot_20251102_213449.png" style="width:280px; height:auto;"/>
+<img alt="Login Screen" src="docs/Screenshot_20251102_213018.png" style="width:100px; height:auto;">
+<img alt="Home Screen" src="docs/Screenshot_20251102_213403.png" style="width:100px; height:auto;"/>
+<img alt="Patient Reg" src="docs/Screenshot_20251102_213244.png" style="width:100px; height:auto;"/>
+<img alt="Vitals Screen" src="docs/Screenshot_20251102_213320.png" style="width:100px; height:auto;"/>
+<img alt="Assessment Screen" src="docs/Screenshot_20251102_213328.png" style="width:100px; height:auto;"/>
+<img alt="Patient Preview" src="docs/Screenshot_20251102_213449.png" style="width:100px; height:auto;"/>
 
 
 
