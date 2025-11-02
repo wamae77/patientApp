@@ -17,7 +17,7 @@ pagingVersion = "3.3.6"
 ktorVersion = "3.3.1"
 androidxWork="2.10.2"
 hiltExt = "1.2.0"
-
+preference = "1.1.7"
 
 
 
@@ -53,6 +53,8 @@ ktor-client-logging = { group = "io.ktor",name ="ktor-client-logging", version.r
 androidx-work-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidxWork" }
 hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltExt" }
 hilt-ext-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltExt" }
+datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "preference" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

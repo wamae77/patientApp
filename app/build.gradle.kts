@@ -82,4 +82,6 @@ dependencies {
     implementation(libs.hilt.work)
     ksp(libs.hilt.ext.compiler)
 
+    implementation(libs.datastore.preferences)
+
 }

@@ -3,6 +3,8 @@ package com.ke.patientapp.feature.auth.repository
 import android.util.Log
 import com.ke.patientapp.core.data.local.dao.UserDao
 import com.ke.patientapp.core.data.local.entities.UserEntity
+import com.ke.patientapp.core.data.preference.AppPreference
+import com.ke.patientapp.core.data.preference.AppPreference.Companion.ACCESS_TOKEN_KEY
 import com.ke.patientapp.core.data.remote.login
 import com.ke.patientapp.core.data.remote.models.BadCredentialsResponse
 import com.ke.patientapp.core.data.remote.models.BadCredentialsResponseX
@@ -22,7 +24,8 @@ import javax.inject.Singleton
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
     private val userDao: UserDao,
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
+    private val preference: AppPreference
 ) : AuthRepository {
 
     override suspend fun login(
@@ -52,6 +55,7 @@ class AuthRepositoryImpl @Inject constructor(
                         password = password
                     )
                 )
+                preference.saveValue(ACCESS_TOKEN_KEY, responseBody.data.access_token)
                 onSuccess(responseBody)
             } else if (responseCode == 422) {
                 val response = response.body<BadCredentialsResponseX>()
@@ -94,10 +98,12 @@ class AuthRepositoryImpl @Inject constructor(
                     onSuccess(responseBody)
 
                 }
+
                 422 -> {
                     val response = response.body<SignUpFailureResponse>()
                     onFailure(response.message)
                 }
+
                 else -> {
                     throw ClientRequestException(response, response.body())
                 }

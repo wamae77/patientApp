@@ -1,9 +1,7 @@
 package com.ke.patientapp.core.sync
 
 import android.content.Context
-import android.os.Build
 import android.util.Log
-import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.BackoffPolicy
 import androidx.work.CoroutineWorker
@@ -11,11 +9,12 @@ import androidx.work.ForegroundInfo
 import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkerParameters
-import com.ke.patientapp.R
 import com.ke.patientapp.core.data.local.dao.AssessmentDao
 import com.ke.patientapp.core.data.local.dao.PatientDao
 import com.ke.patientapp.core.data.local.dao.VitalsDao
 import com.ke.patientapp.core.data.local.entities.SyncState
+import com.ke.patientapp.core.data.preference.AppPreference
+import com.ke.patientapp.core.data.preference.AppPreference.Companion.ACCESS_TOKEN_KEY
 import com.ke.patientapp.core.data.remote.addVisits
 import com.ke.patientapp.core.data.remote.addVital
 import com.ke.patientapp.core.data.remote.models.AddVisitsPayload
@@ -29,6 +28,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import kotlinx.coroutines.flow.first
 import java.util.concurrent.TimeUnit
 
 @HiltWorker
@@ -39,6 +39,7 @@ class SyncWorker @AssistedInject constructor(
     private val vitalsDao: VitalsDao,
     private val assessmentDao: AssessmentDao,
     private val httpClient: HttpClient,
+    private val preference: AppPreference
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun getForegroundInfo(): ForegroundInfo =
@@ -50,11 +51,14 @@ class SyncWorker @AssistedInject constructor(
         )
 
     override suspend fun doWork(): Result = try {
-        val patientFailures = syncPatients()
 
-        val vitalsFailures = syncVitalsForSyncedPatients()
+        val token = preference.getValue(ACCESS_TOKEN_KEY, "").first()
 
-        val assessmentFailures = syncAssessmentsForSyncedPatients()
+        val patientFailures = syncPatients(token)
+
+        val vitalsFailures = syncVitalsForSyncedPatients(token)
+
+        val assessmentFailures = syncAssessmentsForSyncedPatients(token)
 
 
         if (patientFailures || vitalsFailures || assessmentFailures) {
@@ -67,7 +71,7 @@ class SyncWorker @AssistedInject constructor(
         Result.retry()
     }
 
-    private suspend fun syncPatients(): Boolean {
+    private suspend fun syncPatients(token: String): Boolean {
         val toSync = patientDao.findForSync(limit = 50)
         if (toSync.isEmpty()) return false
 
@@ -77,7 +81,7 @@ class SyncWorker @AssistedInject constructor(
                 patientDao.updateSyncState(p.id, SyncState.SYNCING)
 
                 val res = httpClient.registerPatient(
-                    token = hardcodedToken(),
+                    token = token,
                     registerPatientPayload = RegisterPatientPayload(
                         unique = p.patientId,
                         reg_date = p.registrationDate,
@@ -107,7 +111,7 @@ class SyncWorker @AssistedInject constructor(
         return anyFailed
     }
 
-    private suspend fun syncVitalsForSyncedPatients(): Boolean {
+    private suspend fun syncVitalsForSyncedPatients(token: String): Boolean {
         val vitalsBatch = vitalsDao.findForSync(limit = 50)
         if (vitalsBatch.isEmpty()) return false
 
@@ -128,7 +132,7 @@ class SyncWorker @AssistedInject constructor(
                         weight = v.weightKg.toString(),
 
                         ),
-                    token = hardcodedToken()
+                    token = token
                 )
 
                 if (res.status.value != 200) error("submitVitals failed: ${res.status}")
@@ -150,7 +154,7 @@ class SyncWorker @AssistedInject constructor(
     }
 
 
-    private suspend fun syncAssessmentsForSyncedPatients(): Boolean {
+    private suspend fun syncAssessmentsForSyncedPatients(token: String): Boolean {
         val assessmentsBatch = assessmentDao.findForSync(limit = 50)
         if (assessmentsBatch.isEmpty()) return false
 
@@ -165,7 +169,7 @@ class SyncWorker @AssistedInject constructor(
                 val onDiet = if (a.everBeenOnADietToLooseWeight) "Yes" else "No"
                 val onDrugs = if (a.areYouCurrentlyTakingDrugs) "Yes" else "No"
                 val res = httpClient.addVisits(
-                    token = hardcodedToken(),
+                    token = token,
                     addVisitsPayload = AddVisitsPayload(
                         patient_id = parent.patientId,
                         visit_date = a.visitDate,
@@ -195,8 +199,6 @@ class SyncWorker @AssistedInject constructor(
         return anyFailed
     }
 
-    private fun hardcodedToken(): String =
-        "44|aYQU93Fc4iV9fZlYG1d1gSaEgUQg7gid1yr3I7Ru"
 
     companion object {
         const val TAG = "SyncWorker"
