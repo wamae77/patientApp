@@ -57,7 +57,9 @@ fun PatientAppNavHost(
         }
 
         composable<ListingRoute> {
-            ListingScreen()
+            ListingScreen(onRegistrationClick = {
+                navController.navigate(RegistrationRoute)
+            })
         }
     }
 }
