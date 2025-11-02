@@ -1,14 +1,17 @@
 package com.ke.patientapp.core.sync
 
 import android.content.Context
-import android.net.http.HttpException
+import android.os.Build
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.BackoffPolicy
 import androidx.work.CoroutineWorker
+import androidx.work.ForegroundInfo
 import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkerParameters
+import com.ke.patientapp.R
 import com.ke.patientapp.core.data.local.dao.AssessmentDao
 import com.ke.patientapp.core.data.local.dao.PatientDao
 import com.ke.patientapp.core.data.local.dao.VitalsDao
@@ -31,7 +34,30 @@ class SyncWorker @AssistedInject constructor(
     private val assessmentDao: AssessmentDao,
     private val httpClient: HttpClient,
 ) : CoroutineWorker(context, workerParams) {
+
+    override suspend fun getForegroundInfo(): ForegroundInfo {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.syncForegroundInfo(
+                channelName = "Sync Service",
+                title = "Syncing Data",
+                contentText = "Your data is being synchronized",
+                notDescription = "Background sync notification"
+            )
+        } else {
+            val notification = NotificationCompat.Builder(context, "")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle("Syncing Data")
+                .setContentText("Your data is being synchronized")
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .build()
+
+            ForegroundInfo(1, notification)
+        }
+    }
+
+
     override suspend fun doWork(): Result {
+
 
         return try {
             val existing = patientDao.findForSync()
@@ -71,7 +97,7 @@ class SyncWorker @AssistedInject constructor(
                 )
             }
             Result.success()
-        } catch (e: HttpException) {
+        } catch (e: Exception) {
             Log.e("PatientSyncWorker", "doWork: ", e)
             Result.retry()
         } catch (t: Throwable) {

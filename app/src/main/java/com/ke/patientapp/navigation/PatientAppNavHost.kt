@@ -16,7 +16,7 @@ import kotlinx.serialization.Serializable
 @Composable
 fun PatientAppNavHost(
     modifier: Modifier = Modifier,
-    navController: NavHostController, startDestination: Any = ListingRoute
+    navController: NavHostController, startDestination: Any = RegistrationRoute
 ) {
     NavHost(
         modifier = modifier,
