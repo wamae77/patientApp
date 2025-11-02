@@ -88,15 +88,19 @@ class AuthRepositoryImpl @Inject constructor(
                 )
             )
 
-            if (response.status.value == 200) {
-                val responseBody = response.body<SignUpResponse>()
-                onSuccess(responseBody)
+            when (response.status.value) {
+                200 -> {
+                    val responseBody = response.body<SignUpResponse>()
+                    onSuccess(responseBody)
 
-            } else if (response.status.value == 422) {
-                val response = response.body<SignUpFailureResponse>()
-                onFailure(response.message)
-            } else {
-                throw ClientRequestException(response, response.body())
+                }
+                422 -> {
+                    val response = response.body<SignUpFailureResponse>()
+                    onFailure(response.message)
+                }
+                else -> {
+                    throw ClientRequestException(response, response.body())
+                }
             }
         } catch (e: Exception) {
             Log.e("signup", e.toString())
