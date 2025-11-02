@@ -1,5 +1,8 @@
 package com.ke.patientapp.feature.listing
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,6 +17,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PersonAdd
@@ -37,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -128,7 +133,7 @@ fun ListingScreen(
                 contentType = lazyItems.itemContentType()
             ) { index ->
                 lazyItems[index]?.let { row ->
-                    PatientRow(row) {onItemClick(row.patientDbId) }
+                    PatientRow(row = row, onClick ={onItemClick(row.patientDbId) })
                 }
             }
 
@@ -185,68 +190,80 @@ fun ListingScreen(
 
 
 
+
+
 @Composable
 fun PatientRow(
     row: UiRow,
-    onClick: (Long) -> Unit
+    onClick: (Long) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(12.dp)
-            .clickable { onClick(row.patientDbId) },
+            .clickable { onClick(row.patientDbId) }
+            .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
+        Column(Modifier.weight(1f)) {
             Text(
                 text = row.name,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF2B2B2B)
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(2.dp))
             Text(
                 text = "Age: ${row.age}",
-                fontSize = 14.sp,
-                color = Color.Gray
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            if (row.lastVisitDate != null) {
+            row.lastVisitDate?.let {
+                Spacer(Modifier.height(2.dp))
                 Text(
-                    text = "Last Visit: ${row.lastVisitDate}",
-                    fontSize = 13.sp,
-                    color = Color.Gray
+                    text = "Last Visit: $it",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
 
-        Column(
-            horizontalAlignment = Alignment.End
-        ) {
-            val statusColor = when (row.lastBmiStatus?.lowercase()) {
-                "underweight" -> Color(0xFF1E88E5)
-                "normal" -> Color(0xFF43A047)
-                "overweight" -> Color(0xFFE53935)
-                else -> Color.Gray
-            }
-
+        Column(horizontalAlignment = Alignment.End) {
             Text(
                 text = row.lastBmi ?: "--",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = statusColor
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
             )
-            row.lastBmiStatus?.let {
-                Text(
-                    text = it,
-                    fontSize = 13.sp,
-                    color = statusColor,
-                    fontWeight = FontWeight.SemiBold
-                )
+            row.lastBmiStatus?.let { status ->
+                Spacer(Modifier.height(4.dp))
+                StatusChip(label = status)
             }
-
         }
+    }
+}
+
+@Composable
+private fun StatusChip(label: String, modifier: Modifier = Modifier) {
+    val tint = when (label.lowercase()) {
+        "underweight" -> Color(0xFF22D3EE)
+        "normal"      -> Color(0xFF34D399)
+        "overweight"  -> Color(0xFFF59E0B)
+        "obese"       -> Color(0xFFF43F5E)
+        else          -> MaterialTheme.colorScheme.outline
+    }
+
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(tint.copy(alpha = 0.12f))
+            .border(BorderStroke(1.dp, tint.copy(alpha = 0.6f)), RoundedCornerShape(12.dp))
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = tint
+        )
     }
 }

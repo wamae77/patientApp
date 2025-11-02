@@ -36,6 +36,7 @@ class AuthViewModel @Inject constructor(
     val signupState: StateFlow<SignupUiState> = _signupState.asStateFlow()
 
     fun onEmailChange(value: String) {
+        value.trim()
         _uiState.update { s ->
             val emailErr = validateEmail(value)
             val enabled = canSubmit(value, s.password, emailErr, s.passwordError)

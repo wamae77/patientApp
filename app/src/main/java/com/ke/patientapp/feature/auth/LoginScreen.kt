@@ -44,6 +44,7 @@ fun LoginScreen(
         Spacer(Modifier.height(16.dp))
 
         OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
             value = state.email,
             onValueChange = viewModel::onEmailChange,
             label = { Text("Email") },
@@ -55,6 +56,7 @@ fun LoginScreen(
         )
 
         OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
             value = state.password,
             onValueChange = viewModel::onPasswordChange,
             label = { Text("Password") },
