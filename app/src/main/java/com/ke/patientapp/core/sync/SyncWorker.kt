@@ -21,6 +21,7 @@ import com.ke.patientapp.core.data.remote.models.RegisterPatientResponse
 import com.ke.patientapp.core.data.remote.registerPatient
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import java.util.concurrent.TimeUnit
@@ -62,9 +63,6 @@ class SyncWorker @AssistedInject constructor(
         return try {
             val existing = patientDao.findForSync()
 
-//            val pendingVitals = vitalsDao.findForSync()
-//
-//            val pendingAssessment = assessmentDao.findForSync()
 
             Log.d("SyncWorker", "doWork: $existing")
 
@@ -73,7 +71,7 @@ class SyncWorker @AssistedInject constructor(
             existing.map {
                 val patientDbId = it.id
 
-                Log.d("SyncWorker","record: $patientDbId")
+                Log.d("SyncWorker", "record: $patientDbId")
 
                 val patient = patientDao.getById(patientDbId) ?: return Result.failure()
 
@@ -88,15 +86,21 @@ class SyncWorker @AssistedInject constructor(
                         gender = patient.gender
                     )
                 )
-                val registerPatientResponse = res.body<RegisterPatientResponse>()
+                if (res.status.value == 200) {
+                    val registerPatientResponse = res.body<RegisterPatientResponse>()
+                    Log.d("SyncWorker", "doWork: $registerPatientResponse")
+                    if (registerPatientResponse.data.proceed == 0) {
+                        patientDao.updateSyncState(
+                            id = patientDbId, state = SyncState.SYNCED
+                        )
+                    }
 
-                Log.d("SyncWorker", "doWork: $registerPatientResponse")
+                } else {
+                    throw Exception("Sync failed")
+                }
 
-                patientDao.updateSyncState(
-                    id = patientDbId, state = SyncState.SYNCED
-                )
             }
-            Result.success()
+            return Result.success()
         } catch (e: Exception) {
             Log.e("PatientSyncWorker", "doWork: ", e)
             Result.retry()
@@ -107,7 +111,6 @@ class SyncWorker @AssistedInject constructor(
 
     companion object {
         const val TAG = "SyncWorker"
-
 
 
         fun startPeriodicSyncWork(): PeriodicWorkRequest =
